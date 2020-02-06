@@ -18,20 +18,11 @@ const pool = new Pool({
  * @return {Promise<{}>} A promise to the user.
  */
 const getUserWithEmail = function(email) {
-  return pool.query(`SELECT * from users where email = '${email}'`)
+  if (!email) return null; 
+  return pool.query(`SELECT * from users where email = $1`, [email])
     .then(res => {
       return res.rows[0];
     })
-  // let user;
-  // for (const userId in users) {
-  //   user = users[userId];
-  //   if (user.email.toLowerCase() === email.toLowerCase()) {
-  //     break;
-  //   } else {
-  //     user = null;
-  //   }
-  // }
-  // return Promise.resolve(user);
 }
 exports.getUserWithEmail = getUserWithEmail;
 
@@ -41,7 +32,10 @@ exports.getUserWithEmail = getUserWithEmail;
  * @return {Promise<{}>} A promise to the user.
  */
 const getUserWithId = function(id) {
-  return Promise.resolve(users[id]);
+  return pool.query('SELECT * from users where id = $1', [id])
+    .then(res => {
+      return res.rows[0];
+    })
 }
 exports.getUserWithId = getUserWithId;
 
@@ -51,15 +45,15 @@ exports.getUserWithId = getUserWithId;
  * @param {{name: string, password: string, email: string}} user
  * @return {Promise<{}>} A promise to the user.
  */
-const addUser =  function(user) {
-  const userId = Object.keys(users).length + 1;
-  user.id = userId;
-  users[userId] = user;
-  return Promise.resolve(user);
-}
-exports.addUser = addUser;
-
-/// Reservations
+  
+  const addUser =  function(user) {
+    console.log(user.email)
+    return pool.query(`INSERT INTO users (name, password, email) VALUES ($1, $2, $3)`, [user.name, user.password, user.email])
+      .then(getUserWithEmail(user.email))
+  }
+  exports.addUser = addUser;
+   
+  /// Reservations
 
 /**
  * Get all reservations for a single user.
@@ -106,3 +100,4 @@ const addProperty = function(property) {
   return Promise.resolve(property);
 }
 exports.addProperty = addProperty;
+  
