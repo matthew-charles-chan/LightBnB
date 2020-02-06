@@ -60,8 +60,14 @@ exports.getUserWithId = getUserWithId;
  * @param {string} guest_id The id of the user.
  * @return {Promise<[{}]>} A promise to the reservations.
  */
-const getAllReservations = function(guest_id, limit = 10) {
-  return getAllProperties(null, 2);
+const getAllReservations = function(guest_id) {
+  return pool.query(`
+    SELECT *
+    FROM properties
+    JOIN reservations ON properties.id = property_id
+    WHERE reservations.guest_id = $1
+  `,[guest_id])
+  .then(res => res.rows);
 }
 exports.getAllReservations = getAllReservations;
 
@@ -79,11 +85,6 @@ const getAllProperties = function(options, limit=10) {
   LIMIT $1
   `, [limit])
   .then(res => res.rows);
-//   const limitedProperties = {};
-//   for (let i = 1; i <= limit; i++) {
-//     limitedProperties[i] = properties[i];
-//   }
-//   return Promise.resolve(limitedProperties);
 }
 exports.getAllProperties = getAllProperties;
 
